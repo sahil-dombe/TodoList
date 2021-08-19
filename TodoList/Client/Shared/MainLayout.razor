@@ -1,0 +1,25 @@
+﻿@using TodoList.Client.Services
+@inherits LayoutComponentBase
+@inject IAuthenticationService AuthenticationService
+
+<div class="page">
+    @if (AuthenticationService.User != null)
+    {
+        <div class="sidebar">
+            <NavMenu />
+        </div>
+    }
+
+<div class="main">
+
+    <div class="top-row px-4">
+        <NavLink class="ml-md-auto" href="swagger"> 
+            <span class="oi oi-arrow-thick-right" aria-hidden="true"></span> Swagger
+        </NavLink>
+    </div>
+
+    <div class="content px-4">
+        @Body
+    </div>
+</div>
+</div>

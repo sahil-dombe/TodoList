@@ -1,0 +1,12 @@
+﻿@page "/lists/{Id:int}"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+
+<TodosTable ListId="Id"></TodosTable>
+
+@code
+{
+    [Parameter]
+    public int Id { get; set; }
+}
+ 

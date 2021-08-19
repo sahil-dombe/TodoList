@@ -1,0 +1,31 @@
+﻿@page "/lists"
+@attribute [Authorize]
+@inherits AllTodoBase
+@using Microsoft.AspNetCore.Authorization
+
+
+@if (TodoListsIds.Any())
+{
+    <h2>
+        All lists of todos
+        <small>(All incompleted todos: @NumberOfAllIncompletedTodos)</small>
+    </h2>
+     
+    @foreach (var todoListId in TodoListsIds)
+    {
+        <TodosTable ListId="todoListId" OnUpdated="GetNumberOfAllIncompletedTodosAsync"></TodosTable>
+    }
+
+}
+else if (!AppState.ListsOfTodos.Any())
+{
+    <strong>No list exists</strong>
+}
+
+else
+{
+    <div class="d-flex align-items-center text-secondary">
+        <strong>Loading...</strong>
+        <div class="spinner-border ml-auto" role="status" aria-hidden="true"></div>
+    </div>
+}

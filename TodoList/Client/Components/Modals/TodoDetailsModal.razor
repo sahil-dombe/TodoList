@@ -1,0 +1,197 @@
+﻿@using TodoList.Client.Services
+@using TodoList.Shared.Dto
+@using System.Net
+@using TodoList.Shared.Enums
+
+<div class="modal @ModalClass" tabindex="-1" role="dialog" style="display:@ModalDisplay">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Details</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" @onclick="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <EditForm Model="@TodoForUpdate" OnValidSubmit="@(async () => await SaveChangesAsync())">
+                <DataAnnotationsValidator />
+
+                <div class="modal-body">
+                    
+                    @if (_updateConflict)
+                    {
+                        <p class="text-danger">Todo with this title already exists</p>
+                    }
+                    else if (_updateFailed)
+                    {
+                        <p class="text-danger">Failed to update todo, try again later</p>
+                    }
+                    else if (_deleteFailed)
+                    {
+                        <p class="text-danger">Failed to delete todo, try again later</p>
+                    }
+                    else 
+                    {
+                        <div class="form-group mb-2">
+                            <label>Title</label>
+                            <InputText @bind-Value="TodoForUpdate.Title" class="form-control"/>
+                            <ValidationMessage For="@(() => TodoForUpdate.Title)"/>
+                        </div>
+
+                        <div class="form-group mb-2">
+                            <label>Description</label>
+                            <InputTextArea @bind-Value="TodoForUpdate.Description" class="form-control" rows="3" style="resize: none;"/>
+                            <ValidationMessage For="@(() => TodoForUpdate.Description)"/>
+                        </div>
+
+                        <div class="form-check mb-2">
+                            <InputCheckbox @bind-Value="TodoForUpdate.IsDone" class="form-check-input" />
+                            <label class="form-check-label">Done</label>
+                            <ValidationMessage For="@(() => TodoForUpdate.IsDone)"/>
+                        </div>
+
+                        <div class="form-check form-check-inline mb-2">
+                            <InputRadioGroup @bind-Value="TodoForUpdate.Color">
+                                Color:
+                                @foreach (var color in (TodoColor[])Enum
+                                    .GetValues(typeof(TodoColor)))
+                                {
+                                    <div class="@string.Concat("bg-", color) rounded-circle d-flex justify-content-center align-items-center mx-1 border border-dark" style="width: 35px; height: 35px">
+                                        <InputRadio Value="color"/> 
+                                    </div>
+                                   
+                                }
+                            </InputRadioGroup>
+                        </div>
+
+                    }
+                </div>
+                <div class="modal-footer d-flex justify-content-between">
+
+                    <button type="button" class="close" aria-label="Delete" @onclick="@(async () => await DeleteTodoAsync())">
+                        <span class="oi oi-trash" aria-hidden="true"></span>
+                    </button>
+
+                    <div>
+                        <button type="submit" class="btn btn-primary">Save changes</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal" @onclick="Close">Cancel</button>
+                    </div>
+                </div>
+            </EditForm>
+
+        </div>
+    </div>
+</div>
+
+
+@if (ShowBackdrop)
+{
+    <div class="modal-backdrop fade show"></div>
+}
+
+
+@code {
+
+    private TodoForUpdateDto TodoForUpdate { get; } = new();
+    private TodoDto _loadedTodo;
+
+    [Inject]
+    private ITodosService TodosService { get; set; }
+
+    [Inject]
+    private AppStateContainer AppState { get; set; }
+
+    [Inject]
+    private NavigationManager NavigationManager { get; set; }
+
+    [Parameter]
+    public EventCallback OnTodoUpdated { get; set; }
+
+    public string ModalDisplay = "none;";
+    public string ModalClass = "";
+    public bool ShowBackdrop = false;
+
+    private bool _deleteFailed = false;
+    private bool _updateFailed = false;
+    private bool _updateConflict = false;
+
+    public void Open(TodoDto todo)
+    {
+        _loadedTodo = todo;
+
+        TodoForUpdate.Title = todo.Title;
+        TodoForUpdate.Description = todo.Description;
+        TodoForUpdate.IsDone = todo.IsDone;
+        TodoForUpdate.Color = todo.Color;
+
+        ModalDisplay = "block;";
+        ModalClass = "Show";
+        ShowBackdrop = true;
+        _updateFailed = false;
+        _deleteFailed = false;
+        _updateConflict = false;
+        StateHasChanged();
+    }
+
+    public void Close()
+    {
+        ModalDisplay = "none";
+        ModalClass = "";
+        ShowBackdrop = false;
+        StateHasChanged();
+    }
+
+    private async Task SaveChangesAsync()
+    {
+        var response = await TodosService.UpdateTodo(_loadedTodo.ListOfTodosId, _loadedTodo.Id, TodoForUpdate);
+
+        if (response.IsSuccessStatusCode)
+        {
+            _updateFailed = false;
+
+            //todo for AppState update
+            var todo = new TodoDto()
+            {
+                Id = _loadedTodo.Id,
+                ListOfTodosId = _loadedTodo.ListOfTodosId,
+                Title = TodoForUpdate.Title,
+                Description = TodoForUpdate.Description,
+                IsDone = TodoForUpdate.IsDone,
+                Color = TodoForUpdate.Color,
+                DateAdded = _loadedTodo.DateAdded
+            };
+
+            AppState.UpdateTodo(todo);
+            await OnTodoUpdated.InvokeAsync();
+            Close();
+        }
+        else if (response.StatusCode == HttpStatusCode.Conflict)
+        {
+            _updateConflict = true;
+        }
+        else
+        {
+            _updateFailed = true;
+        }
+
+    }
+
+    private async Task DeleteTodoAsync()
+    {
+        var response = await TodosService.DeleteTodo(_loadedTodo.ListOfTodosId, _loadedTodo.Id);
+
+        if (response.IsSuccessStatusCode)
+        {
+            _deleteFailed = false;
+            AppState.DeleteTodo(_loadedTodo);
+            await OnTodoUpdated.InvokeAsync();
+            Close();
+        }
+        else
+        {
+            _deleteFailed = true;
+        }
+
+    }
+
+}

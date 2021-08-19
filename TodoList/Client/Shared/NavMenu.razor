@@ -1,0 +1,113 @@
+﻿@using System.Net.Http
+@using TodoList.Client.Services
+@inject HttpClient Http
+@inject ITodoListsService TodoListsService
+@inject AppStateContainer AppState
+@implements IDisposable
+
+    <div class="top-row pl-4 navbar navbar-dark">
+        <a class="navbar-brand" href="">TodoList</a>
+        <button class="navbar-toggler" @onclick="ToggleNavMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div> 
+
+    <div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+        <ul class="nav flex-column">
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="logout">
+                    <span class="oi oi-arrow-thick-left" aria-hidden="true"></span> Logout
+                </NavLink>
+            </li>
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                    <span class="oi oi-home" aria-hidden="true"></span> Home
+                </NavLink>
+            </li>
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="/lists/new">
+                    <span class="oi oi-plus" aria-hidden="true"></span> New list
+                </NavLink>
+            </li>
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="/lists" Match="NavLinkMatch.All">
+                    <span class="oi oi-list-rich" aria-hidden="true"></span> All
+                </NavLink>
+            </li>
+        </ul>
+        
+        <hr class="bg-secondary"/>
+
+        <div style="overflow-y: auto; max-height: 400px; ">
+
+            <ul class="nav flex-column">
+                @if (AppState.ListsOfTodos.Any())
+                {
+                    @foreach (var list in AppState.ListsOfTodos)
+                    {
+                        var href = "lists/" + list.Id;
+                        <li class="nav-item px-3">
+                            <NavLink class="nav-link" href=@href>
+                                <span class="oi oi-list-rich" aria-hidden="true"></span>
+                                <span class="d-inline-block text-truncate" style="max-width: 140px;">@list.Title</span>
+                            </NavLink>
+                        </li>
+                    }
+                }
+
+                else if(!AppState.ListsOfTodos.Any() && AppState.NumberOfAllIncompletedTodos == 0)
+                {
+                    <li class="nav-item px-3">
+                        <strong class="text-white">No list exists</strong>
+                    </li>
+                }
+
+                else
+                {
+                    <li class="nav-item px-3">
+                        <div class="d-flex align-items-center text-secondary">
+                            <strong>Loading...</strong>
+                            <div class="spinner-border ml-auto" role="status" aria-hidden="true"></div>
+                        </div>
+                    </li>
+                }
+
+            </ul>
+        </div>
+
+    </div>
+
+
+
+@code {
+    private bool collapseNavMenu = true;
+
+    private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var todoLists = await TodoListsService.GetAllListsOfTodosAsync();
+
+        if (!todoLists.Any())
+        {
+           AppState.NoListsExists();
+        }
+
+        else
+        {
+            AppState.AddListsOfTodos(todoLists);
+        }
+
+        AppState.OnListsUpdate += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        AppState.OnListsUpdate -= StateHasChanged;
+    }
+}
