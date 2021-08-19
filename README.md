@@ -10,3 +10,5 @@
  2. Build the application 
  
  3. Run command "Update-Databse" in package manager console.
+ 
+ 4. You are ready to take on the world.
