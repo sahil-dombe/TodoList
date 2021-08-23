@@ -71,7 +71,7 @@ namespace TodoList.Server
 
             services.AddAutoMapper(typeof(Startup));
 
-            //services.AddSwaggerGenNewtonsoftSupport();
+            services.AddSwaggerGenNewtonsoftSupport();
 
             services.AddSwaggerGen(setupAction =>
             {
@@ -82,8 +82,12 @@ namespace TodoList.Server
                         Title = "TodoList API",
                         Version = "1",
                         Description = "Through this API you can access todos lists and todos",
-                        
-                    });
+                        License = new OpenApiLicense
+                        {
+                            Name = "MIT License",
+                            Url = new Uri("https://opensource.org/licenses/MIT")
+                        }
+                    }); ;
 
                 OpenApiSecurityScheme securityDefinition = new OpenApiSecurityScheme()
                 {
@@ -144,25 +148,7 @@ namespace TodoList.Server
                         ValidateAudience = false
                     };
                 });
-            //services.AddAuthentication(x =>
-            //{
-            //    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            //    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            //})
-            //    .AddJwtBearer(x =>
-            //    {
-            //        x.RequireHttpsMetadata = false;
-            //        x.SaveToken = true;
-            //        x.TokenValidationParameters = new TokenValidationParameters
-            //        {
-            //            ValidIssuer = "https://localhost:44331/",
-            //            ValidAudience = "https://localhost:44331",
-            //            ValidateIssuerSigningKey = true,
-            //            IssuerSigningKey = new SymmetricSecurityKey(key),
-            //            ValidateIssuer = true,
-            //            ValidateAudience = true
-            //        };
-            //    });
+            
 
         }
 

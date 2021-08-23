@@ -7,7 +7,7 @@ namespace TodoList.Server.Models
     {
         public int Id { get; set; }
 
-        [Required(AllowEmptyStrings = false)] //this can't be done in fluent api
+        [Required(AllowEmptyStrings = false)] 
          
         public string Title { get; set; }
         public IEnumerable<Todo> Todos { get; set; }
