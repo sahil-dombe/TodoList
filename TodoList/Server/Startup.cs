@@ -77,7 +77,7 @@ namespace TodoList.Server
             {
                 setupAction.SwaggerDoc(
                     "TodoListOpenAPISepcification",
-                    new Microsoft.OpenApi.Models.OpenApiInfo()
+                    new OpenApiInfo()
                     {
                         Title = "TodoList API",
                         Version = "1",
