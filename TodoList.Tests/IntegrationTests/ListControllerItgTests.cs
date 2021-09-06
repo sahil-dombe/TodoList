@@ -9,8 +9,10 @@ using System.Threading.Tasks;
 using TodoList.Server;
 using TodoList.Server.Models;
 using TodoList.Shared.Dto;
+using TodoList.Tests.IntegrationTests.Helper;
 using Xunit;
 
+[assembly : CollectionBehavior(DisableTestParallelization = true)]
 namespace TodoList.Tests.IntegrationTests
 {
     public class ListControllerItgTests : IClassFixture<CustomWebApplicationFactory<Startup>>
@@ -40,9 +42,9 @@ namespace TodoList.Tests.IntegrationTests
                 Title = "list1"
             };
             var content = new StringContent(JsonConvert.SerializeObject(listOfTodosForCreationDto),Encoding.UTF8,"application/json");
-            
+            var token = await Utilities.GetNewToken(_client);
             //Act
-            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEiLCJ1c2VybmFtZSI6InNpbW8iLCJuYmYiOjE2Mjk2NTA1MTMsImV4cCI6MTYzMDI1NTMxMywiaWF0IjoxNjI5NjUwNTEzfQ.grZ2VmikIrjUCttunEGuMkTMSHcBMdKpxwWaz1q6CBQ");
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             var response = await _client.PostAsync("/api/Lists",content);
             var responseContent = await response.Content.ReadAsStringAsync();
             var listOfTodosDto = JsonConvert.DeserializeObject<ListOfTodosDto>(responseContent);

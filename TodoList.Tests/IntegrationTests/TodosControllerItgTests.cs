@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using TodoList.Server;
 using TodoList.Server.Models;
 using TodoList.Shared.Dto;
+using TodoList.Tests.IntegrationTests.Helper;
 using Xunit;
 
 namespace TodoList.Tests.IntegrationTests
@@ -46,9 +47,10 @@ namespace TodoList.Tests.IntegrationTests
 
             _todoContext.ListsOfTodos.Add(todoList);
             _todoContext.SaveChanges();
+            var token = await Utilities.GetNewToken(_client);
 
             //Act
-            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEiLCJ1c2VybmFtZSI6InNpbW8iLCJuYmYiOjE2Mjk2NTA1MTMsImV4cCI6MTYzMDI1NTMxMywiaWF0IjoxNjI5NjUwNTEzfQ.grZ2VmikIrjUCttunEGuMkTMSHcBMdKpxwWaz1q6CBQ");
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             var response = await _client.PostAsync("/api/lists/1/Todos", content);
             var responseContent = await response.Content.ReadAsStringAsync();
             var TodosDto = JsonConvert.DeserializeObject<ListOfTodosDto>(responseContent);
