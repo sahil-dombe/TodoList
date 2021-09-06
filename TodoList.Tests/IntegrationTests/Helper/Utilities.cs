@@ -13,8 +13,8 @@ namespace TodoList.Tests.IntegrationTests.Helper
         {
             var user = new User
             {
-                Username = "simo",
-                Password = "strongpassword"
+                Username = "user",
+                Password = "05926FD3E6EC8C13C5DA5205B546037BDCF861528E0BDB22E9CECE29E567A1BC"
             };
 
             db.Users.Add(user);
@@ -32,7 +32,7 @@ namespace TodoList.Tests.IntegrationTests.Helper
         {
             var user = new AuthenticateRequest
             {
-                Username = "username",
+                Username = "user",
                 Password = "strongpassword"
             };
             var content = new StringContent(JsonConvert.SerializeObject(user), Encoding.UTF8, "application/json");
